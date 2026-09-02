@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image to PDF Converter</title>
+  <script src="./pdf-lib.min.js"></script>
+  <script>
+    if (typeof PDFLib === 'undefined') {
+      document.write('<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"><\/script>');
+    }
+  </script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --primary: #38bdf8;
+      --primary-hover: #0ea5e9;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --danger: #ef4444;
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      background: linear-gradient(90deg, rgba(2, 0, 36, 1) 0%, rgba(12, 50, 176, 1) 35%, rgba(77, 0, 112, 1) 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    header {
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    header p {
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+      font-size: 0.95rem;
+    }
+
+    /* Drop Zone */
+    .dropzone {
+      display: block;
+      border: 2px dashed var(--card-border);
+      border-radius: var(--radius);
+      background-color: var(--card-bg);
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+
+    .dropzone * {
+      pointer-events: none;
+    }
+
+    .dropzone.dragover {
+      border-color: var(--primary);
+      background-color: rgba(56, 189, 248, 0.05);
+    }
+
+    .dropzone svg {
+      width: 48px;
+      height: 48px;
+      fill: var(--primary);
+      margin-bottom: 0.75rem;
+    }
+
+    .dropzone p {
+      font-size: 1.05rem;
+      font-weight: 500;
+    }
+
+    .dropzone span {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    /* Options Panel */
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .field label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .field select,
+    .field input {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 0.55rem 0.75rem;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .field select:focus,
+    .field input:focus {
+      border-color: var(--primary);
+    }
+
+    /* Grid Preview */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+
+    .item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      position: relative;
+      cursor: grab;
+      user-select: none;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+
+    .item.dragging {
+      opacity: 0.4;
+      border-color: var(--primary);
+    }
+
+    .thumb-wrap {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #0f172a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .thumb-wrap img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      transition: transform 0.2s;
+    }
+
+    .item-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .item-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.25rem;
+    }
+
+    .btn-icon {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 0.35rem 0.45rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .btn-icon:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .btn-icon.del:hover {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    /* Actions bar */
+    .actions-bar {
+      display: flex;
+      gap: 1rem;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      background: var(--primary);
+      color: #0f172a;
+      font-weight: 700;
+      border: none;
+      border-radius: var(--radius);
+      padding: 0.85rem 1.75rem;
+      font-size: 1rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: background-color 0.15s, transform 0.1s;
+    }
+
+    .btn:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--card-border);
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background: var(--card-bg);
+      border-color: var(--text-muted);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .progress {
+      font-size: 0.9rem;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* Edit & Redact Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 1rem;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 620px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal h2 {
+      font-size: 1.2rem;
+      color: var(--primary);
+    }
+
+    .tool-bar {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .tool-btn {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.15s;
+    }
+
+    .tool-btn.active {
+      background: var(--primary);
+      color: #0f172a;
+      font-weight: bold;
+      border-color: var(--primary);
+    }
+
+    .modal-canvas-wrap {
+      width: 100%;
+      height: 320px;
+      background: #0f172a;
+      border: 1px dashed var(--card-border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .modal-canvas-wrap canvas {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      cursor: crosshair;
+    }
+
+    .modal-controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0.75rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.5rem;
+    }
+
+    .hint-text {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Image to PDF</h1>
+      <p>Convert, redact sensitive info, watermark, and merge images into a PDF. 100% private.</p>
+    </header>
+
+    <!-- Dropzone -->
+    <label class="dropzone" id="dropzone" for="fileInput">
+      <svg viewBox="0 0 24 24">
+        <path
+          d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
+      </svg>
+      <p>Click or drag & drop images here</p>
+      <span>Supports JPG, PNG, WEBP, GIF, BMP, SVG</span>
+    </label>
+    <input type="file" id="fileInput" multiple accept="image/*">
+
+    <!-- Options -->
+    <div class="panel">
+      <div class="field">
+        <label for="pageSize">Page Size</label>
+        <select id="pageSize">
+          <option value="fit">Fit to Image Size</option>
+          <option value="a4">A4 (Standard)</option>
+          <option value="letter">US Letter</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="orientation">Orientation</label>
+        <select id="orientation">
+          <option value="auto">Auto (Match Image)</option>
+          <option value="portrait">Portrait</option>
+          <option value="landscape">Landscape</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="margin">Margin</label>
+        <select id="margin">
+          <option value="0">None (0 mm)</option>
+          <option value="15">Small (5 mm)</option>
+          <option value="30">Medium (10 mm)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="watermark">Tiled Watermark (Repeats all pages)</label>
+        <input type="text" id="watermark" placeholder="e.g. CONFIDENTIAL, DRAFT">
+      </div>
+
+      <div class="field">
+        <label for="filename">File Name</label>
+        <input type="text" id="filename" value="converted_images.pdf">
+      </div>
+    </div>
+
+    <!-- Gallery / Drag & Drop list -->
+    <div class="grid" id="gallery"></div>
+    <div class="empty-state" id="emptyState">No images added yet.</div>
+
+    <!-- Actions -->
+    <div class="actions-bar">
+      <button class="btn btn-secondary" id="clearBtn" style="display: none;">Clear All</button>
+      <span class="progress" id="statusText"></span>
+      <button class="btn" id="convertBtn" disabled>
+        <span>Convert to PDF</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Edit & Redact Modal -->
+  <div class="modal-backdrop" id="editModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Edit & Redact Image</h2>
+        <div class="tool-bar">
+          <button class="tool-btn active" id="redactToolBtn">⬛ Blackout / Redact Box</button>
+          <button class="tool-btn" id="undoRedactBtn">↩ Undo Box</button>
+        </div>
+      </div>
+
+      <div class="modal-canvas-wrap">
+        <canvas id="editCanvas"></canvas>
+      </div>
+      <div class="hint-text">💡 Tip: Click and drag on the image to draw blackout boxes over IDs, addresses, or faces.
+      </div>
+
+      <div class="modal-controls">
+        <div class="field">
+          <label for="brightness">Brightness</label>
+          <input type="range" id="brightness" min="50" max="150" value="100">
+        </div>
+        <div class="field">
+          <label for="contrast">Contrast</label>
+          <input type="range" id="contrast" min="50" max="150" value="100">
+        </div>
+        <div class="field">
+          <label for="grayscale">Grayscale</label>
+          <input type="range" id="grayscale" min="0" max="100" value="0">
+        </div>
+        <div class="field">
+          <label for="filterPreset">Preset</label>
+          <select id="filterPreset">
+            <option value="none">Normal</option>
+            <option value="bw">Black & White</option>
+            <option value="sepia">Sepia</option>
+            <option value="high-contrast">High Contrast</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="tool-btn" id="clearRedactBtn">Clear All Boxes</button>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
+          <button class="btn" id="saveEditBtn">Apply Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer style="text-align: center; margin-top: 2rem; color: var(--text-muted); font-size: 0.85rem;">
+    Develop by <a href="https://alkiory.com" target="_blank"
+      style="color: var(--primary); text-decoration: none;">Alkiory</a> with ☕ & 💖. <br>
+    To promote privacy, all processing is done locally in your browser. No images are uploaded to any server.
+  </footer>
+
+  <script>
+    let items = []; // { id, file, url, previewUrl, rotation: 0, filters: {}, redactions: [] }
+    let editingIndex = null;
+    let editImg = new Image();
+    let currentRedactions = []; // [{ x, y, w, h }] in natural image coordinates
+    let isDrawing = false;
+    let startX = 0, startY = 0, currentX = 0, currentY = 0;
+
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const gallery = document.getElementById('gallery');
+    const emptyState = document.getElementById('emptyState');
+    const convertBtn = document.getElementById('convertBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const statusText = document.getElementById('statusText');
+
+    // Modal elements
+    const editModal = document.getElementById('editModal');
+    const editCanvas = document.getElementById('editCanvas');
+    const brightnessInput = document.getElementById('brightness');
+    const contrastInput = document.getElementById('contrast');
+    const grayscaleInput = document.getElementById('grayscale');
+    const filterPreset = document.getElementById('filterPreset');
+    const undoRedactBtn = document.getElementById('undoRedactBtn');
+    const clearRedactBtn = document.getElementById('clearRedactBtn');
+    const saveEditBtn = document.getElementById('saveEditBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+
+    // Prevent default browser drop
+    ['dragover', 'drop'].forEach(name => window.addEventListener(name, (e) => e.preventDefault()));
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files?.length) handleFiles(e.target.files);
+      fileInput.value = '';
+    });
+
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.add('dragover');
+    });
+
+    ['dragleave', 'dragend'].forEach(name => {
+      dropzone.addEventListener(name, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.remove('dragover');
+      });
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer?.files?.length) handleFiles(e.dataTransfer.files);
+    });
+
+    function handleFiles(files) {
+      const validImages = Array.from(files).filter(f => f.type.startsWith('image/'));
+      validImages.forEach(file => {
+        const url = URL.createObjectURL(file);
+        items.push({
+          id: Math.random().toString(36).substring(2, 9),
+          file,
+          url,
+          previewUrl: url,
+          rotation: 0,
+          filters: { brightness: 100, contrast: 100, grayscale: 0, sepia: 0 },
+          redactions: []
+        });
+      });
+      renderGallery();
+    }
+
+    function renderGallery() {
+      gallery.innerHTML = '';
+      const hasItems = items.length > 0;
+      emptyState.style.display = hasItems ? 'none' : 'block';
+      clearBtn.style.display = hasItems ? 'inline-block' : 'none';
+      convertBtn.disabled = !hasItems;
+
+      items.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'item';
+        card.draggable = true;
+        card.dataset.id = item.id;
+
+        const f = item.filters;
+        const filterStyle = `brightness(${f.brightness}%) contrast(${f.contrast}%) grayscale(${f.grayscale}%) sepia(${f.sepia || 0}%)`;
+
+        card.innerHTML = `
+          <div class="thumb-wrap">
+            <img src="${item.previewUrl}" style="transform: rotate(${item.rotation}deg); filter: ${filterStyle}">
+          </div>
+          <div class="item-meta" title="${item.file.name}">#${index + 1} ${item.file.name}${item.redactions?.length ? ' (Redacted)' : ''}</div>
+          <div class="item-actions">
+            <button class="btn-icon" data-act="prev" ${index === 0 ? 'disabled' : ''} title="Move Left">◀</button>
+            <button class="btn-icon" data-act="edit" title="Edit & Redact">✏️</button>
+            <button class="btn-icon" data-act="rot" title="Rotate 90°">⟳</button>
+            <button class="btn-icon del" data-act="del" title="Delete">✕</button>
+            <button class="btn-icon" data-act="next" ${index === items.length - 1 ? 'disabled' : ''} title="Move Right">▶</button>
+          </div>
+        `;
+
+        card.querySelector('[data-act="prev"]')?.addEventListener('click', () => moveItem(index, -1));
+        card.querySelector('[data-act="next"]')?.addEventListener('click', () => moveItem(index, 1));
+        card.querySelector('[data-act="edit"]').addEventListener('click', () => openEditor(index));
+        card.querySelector('[data-act="rot"]').addEventListener('click', () => rotateItem(index));
+        card.querySelector('[data-act="del"]').addEventListener('click', () => deleteItem(index));
+
+        // Drag & Drop reordering
+        card.addEventListener('dragstart', (e) => {
+          card.classList.add('dragging');
+          e.dataTransfer.setData('text/plain', index);
+        });
+        card.addEventListener('dragend', () => card.classList.remove('dragging'));
+        card.addEventListener('dragover', (e) => e.preventDefault());
+        card.addEventListener('drop', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+          if (fromIndex !== index && !isNaN(fromIndex)) {
+            const [moved] = items.splice(fromIndex, 1);
+            items.splice(index, 0, moved);
+            renderGallery();
+          }
+        });
+
+        gallery.appendChild(card);
+      });
+    }
+
+    function moveItem(index, delta) {
+      const target = index + delta;
+      if (target < 0 || target >= items.length) return;
+      const temp = items[index];
+      items[index] = items[target];
+      items[target] = temp;
+      renderGallery();
+    }
+
+    function rotateItem(index) {
+      items[index].rotation = (items[index].rotation + 90) % 360;
+      renderGallery();
+    }
+
+    function deleteItem(index) {
+      URL.revokeObjectURL(items[index].url);
+      if (items[index].previewUrl !== items[index].url) URL.revokeObjectURL(items[index].previewUrl);
+      items.splice(index, 1);
+      renderGallery();
+    }
+
+    clearBtn.addEventListener('click', () => {
+      items.forEach(it => {
+        URL.revokeObjectURL(it.url);
+        if (it.previewUrl !== it.url) URL.revokeObjectURL(it.previewUrl);
+      });
+      items = [];
+      renderGallery();
+    });
+
+    // Editor & Redaction Logic
+    function openEditor(index) {
+      editingIndex = index;
+      const item = items[index];
+      const f = item.filters || { brightness: 100, contrast: 100, grayscale: 0, sepia: 0 };
+      brightnessInput.value = f.brightness;
+      contrastInput.value = f.contrast;
+      grayscaleInput.value = f.grayscale;
+      filterPreset.value = 'none';
+      currentRedactions = JSON.parse(JSON.stringify(item.redactions || []));
+
+      editImg = new Image();
+      editImg.crossOrigin = 'anonymous';
+      editImg.onload = () => {
+        renderEditorCanvas();
+        editModal.classList.add('open');
+      };
+      editImg.src = item.url;
+    }
+
+    function renderEditorCanvas() {
+      if (!editImg.naturalWidth) return;
+      editCanvas.width = editImg.naturalWidth;
+      editCanvas.height = editImg.naturalHeight;
+      const ctx = editCanvas.getContext('2d');
+
+      const b = brightnessInput.value;
+      const c = contrastInput.value;
+      const g = grayscaleInput.value;
+      const s = filterPreset.value === 'sepia' ? 80 : 0;
+
+      ctx.save();
+      ctx.filter = `brightness(${b}%) contrast(${c}%) grayscale(${g}%) sepia(${s}%)`;
+      ctx.drawImage(editImg, 0, 0);
+      ctx.restore();
+
+      // Draw all saved blackout boxes
+      ctx.fillStyle = '#000000';
+      currentRedactions.forEach(r => {
+        ctx.fillRect(r.x, r.y, r.w, r.h);
+      });
+
+      // Draw currently dragging blackout box
+      if (isDrawing) {
+        const x = Math.min(startX, currentX);
+        const y = Math.min(startY, currentY);
+        const w = Math.abs(currentX - startX);
+        const h = Math.abs(currentY - startY);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+        ctx.fillRect(x, y, w, h);
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, w, h);
+      }
+    }
+
+    function getCanvasCoordinates(e) {
+      const rect = editCanvas.getBoundingClientRect();
+      const scaleX = editCanvas.width / rect.width;
+      const scaleY = editCanvas.height / rect.height;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
+      };
+    }
+
+    // Mouse / Touch drawing for Redaction Box
+    editCanvas.addEventListener('mousedown', (e) => {
+      isDrawing = true;
+      const pos = getCanvasCoordinates(e);
+      startX = pos.x;
+      startY = pos.y;
+      currentX = pos.x;
+      currentY = pos.y;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDrawing) return;
+      const pos = getCanvasCoordinates(e);
+      currentX = pos.x;
+      currentY = pos.y;
+      renderEditorCanvas();
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (!isDrawing) return;
+      isDrawing = false;
+      const x = Math.min(startX, currentX);
+      const y = Math.min(startY, currentY);
+      const w = Math.abs(currentX - startX);
+      const h = Math.abs(currentY - startY);
+      if (w > 5 && h > 5) {
+        currentRedactions.push({ x, y, w, h });
+      }
+      renderEditorCanvas();
+    });
+
+    undoRedactBtn.addEventListener('click', () => {
+      currentRedactions.pop();
+      renderEditorCanvas();
+    });
+
+    clearRedactBtn.addEventListener('click', () => {
+      currentRedactions = [];
+      renderEditorCanvas();
+    });
+
+    [brightnessInput, contrastInput, grayscaleInput].forEach(inp => {
+      inp.addEventListener('input', renderEditorCanvas);
+    });
+
+    filterPreset.addEventListener('change', () => {
+      const p = filterPreset.value;
+      if (p === 'bw') { brightnessInput.value = 100; contrastInput.value = 120; grayscaleInput.value = 100; }
+      else if (p === 'sepia') { brightnessInput.value = 100; contrastInput.value = 100; grayscaleInput.value = 0; }
+      else if (p === 'high-contrast') { brightnessInput.value = 105; contrastInput.value = 150; grayscaleInput.value = 0; }
+      else { brightnessInput.value = 100; contrastInput.value = 100; grayscaleInput.value = 0; }
+      renderEditorCanvas();
+    });
+
+    saveEditBtn.addEventListener('click', () => {
+      if (editingIndex !== null) {
+        const item = items[editingIndex];
+        item.filters = {
+          brightness: parseInt(brightnessInput.value, 10),
+          contrast: parseInt(contrastInput.value, 10),
+          grayscale: parseInt(grayscaleInput.value, 10),
+          sepia: filterPreset.value === 'sepia' ? 80 : 0
+        };
+        item.redactions = [...currentRedactions];
+
+        // Generate updated thumbnail with redactions baked in
+        renderEditorCanvas();
+        editCanvas.toBlob((blob) => {
+          if (item.previewUrl !== item.url) URL.revokeObjectURL(item.previewUrl);
+          item.previewUrl = URL.createObjectURL(blob);
+          renderGallery();
+        }, 'image/jpeg', 0.9);
+      }
+      editModal.classList.remove('open');
+    });
+
+    cancelEditBtn.addEventListener('click', () => editModal.classList.remove('open'));
+
+    // Process image with Canvas applying filters, rotation, and blackout redactions
+    async function processImageToJpeg(item) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          const isRotated90or270 = item.rotation % 180 !== 0;
+          const canvas = document.createElement('canvas');
+          canvas.width = isRotated90or270 ? img.naturalHeight : img.naturalWidth;
+          canvas.height = isRotated90or270 ? img.naturalWidth : img.naturalHeight;
+          const ctx = canvas.getContext('2d');
+
+          const f = item.filters || { brightness: 100, contrast: 100, grayscale: 0, sepia: 0 };
+
+          ctx.save();
+          ctx.translate(canvas.width / 2, canvas.height / 2);
+          ctx.rotate((item.rotation * Math.PI) / 180);
+          ctx.filter = `brightness(${f.brightness}%) contrast(${f.contrast}%) grayscale(${f.grayscale}%) sepia(${f.sepia || 0}%)`;
+          ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
+
+          // Draw redactions in rotated context
+          if (item.redactions?.length) {
+            ctx.filter = 'none';
+            ctx.fillStyle = '#000000';
+            item.redactions.forEach(r => {
+              ctx.fillRect(r.x - img.naturalWidth / 2, r.y - img.naturalHeight / 2, r.w, r.h);
+            });
+          }
+          ctx.restore();
+
+          canvas.toBlob((blob) => {
+            blob.arrayBuffer().then(buf => resolve({
+              bytes: new Uint8Array(buf),
+              width: canvas.width,
+              height: canvas.height
+            }));
+          }, 'image/jpeg', 0.92);
+        };
+        img.onerror = reject;
+        img.src = item.url;
+      });
+    }
+
+    // PDF Generation
+    convertBtn.addEventListener('click', async () => {
+      if (!items.length) return;
+      if (typeof window.PDFLib === 'undefined') {
+        alert('PDF library is not loaded.');
+        return;
+      }
+
+      const { PDFDocument, PageSizes, StandardFonts, rgb, degrees } = window.PDFLib;
+      convertBtn.disabled = true;
+      statusText.textContent = 'Generating PDF...';
+
+      try {
+        const pdfDoc = await PDFDocument.create();
+        const pageSizeOpt = document.getElementById('pageSize').value;
+        const orientationOpt = document.getElementById('orientation').value;
+        const margin = parseFloat(document.getElementById('margin').value) || 0;
+        const watermarkText = document.getElementById('watermark').value.trim();
+
+        let font;
+        if (watermarkText) {
+          font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+        }
+
+        for (let i = 0; i < items.length; i++) {
+          statusText.textContent = `Processing image ${i + 1} of ${items.length}...`;
+          const item = items[i];
+          const hasCustomFilters = item.filters && (item.filters.brightness !== 100 || item.filters.contrast !== 100 || item.filters.grayscale !== 0 || item.filters.sepia > 0);
+          const hasRedactions = item.redactions && item.redactions.length > 0;
+          const isDirectJpg = (item.file.type === 'image/jpeg' || item.file.type === 'image/jpg') && item.rotation === 0 && !hasCustomFilters && !hasRedactions;
+          const isDirectPng = item.file.type === 'image/png' && item.rotation === 0 && !hasCustomFilters && !hasRedactions;
+
+          let embeddedImg;
+          let imgWidth, imgHeight;
+
+          if (isDirectJpg) {
+            const bytes = new Uint8Array(await item.file.arrayBuffer());
+            embeddedImg = await pdfDoc.embedJpg(bytes);
+            imgWidth = embeddedImg.width;
+            imgHeight = embeddedImg.height;
+          } else if (isDirectPng) {
+            const bytes = new Uint8Array(await item.file.arrayBuffer());
+            embeddedImg = await pdfDoc.embedPng(bytes);
+            imgWidth = embeddedImg.width;
+            imgHeight = embeddedImg.height;
+          } else {
+            const processed = await processImageToJpeg(item);
+            embeddedImg = await pdfDoc.embedJpg(processed.bytes);
+            imgWidth = processed.width;
+            imgHeight = processed.height;
+          }
+
+          let pWidth, pHeight;
+          if (pageSizeOpt === 'a4') {
+            [pWidth, pHeight] = PageSizes.A4;
+          } else if (pageSizeOpt === 'letter') {
+            [pWidth, pHeight] = PageSizes.Letter;
+          } else {
+            pWidth = imgWidth + margin * 2;
+            pHeight = imgHeight + margin * 2;
+          }
+
+          if (pageSizeOpt !== 'fit') {
+            const shouldBeLandscape = orientationOpt === 'landscape' || (orientationOpt === 'auto' && imgWidth > imgHeight);
+            if (shouldBeLandscape && pWidth < pHeight) {
+              [pWidth, pHeight] = [pHeight, pWidth];
+            } else if (!shouldBeLandscape && orientationOpt === 'portrait' && pWidth > pHeight) {
+              [pWidth, pHeight] = [pHeight, pWidth];
+            }
+          }
+
+          const page = pdfDoc.addPage([pWidth, pHeight]);
+          const availWidth = Math.max(1, pWidth - margin * 2);
+          const availHeight = Math.max(1, pHeight - margin * 2);
+
+          const scale = Math.min(availWidth / imgWidth, availHeight / imgHeight, pageSizeOpt === 'fit' ? 1 : Infinity);
+          const drawWidth = imgWidth * scale;
+          const drawHeight = imgHeight * scale;
+
+          page.drawImage(embeddedImg, {
+            x: (pWidth - drawWidth) / 2,
+            y: (pHeight - drawHeight) / 2,
+            width: drawWidth,
+            height: drawHeight
+          });
+
+          // Draw repeating / tiled diagonal watermark pattern across the entire page
+          if (watermarkText && font) {
+            const textSize = Math.min(pWidth, pHeight) * 0.045;
+            const textWidth = font.widthOfTextAtSize(watermarkText, textSize);
+            const stepX = Math.max(120, textWidth + 80);
+            const stepY = Math.max(80, textSize + 90);
+
+            for (let x = -pWidth; x < pWidth * 2; x += stepX) {
+              for (let y = -pHeight; y < pHeight * 2; y += stepY) {
+                page.drawText(watermarkText, {
+                  x,
+                  y,
+                  size: textSize,
+                  font: font,
+                  color: rgb(0.65, 0.65, 0.65),
+                  opacity: 0.22,
+                  rotate: degrees(30)
+                });
+              }
+            }
+          }
+        }
+
+        statusText.textContent = 'Saving PDF...';
+        const pdfBytes = await pdfDoc.save();
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const downloadUrl = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        let filename = document.getElementById('filename').value.trim() || 'converted_images.pdf';
+        if (!filename.toLowerCase().endsWith('.pdf')) filename += '.pdf';
+        a.href = downloadUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(downloadUrl);
+
+        statusText.textContent = 'Done!';
+        setTimeout(() => { statusText.textContent = ''; }, 3000);
+      } catch (err) {
+        console.error(err);
+        statusText.textContent = 'Error converting images.';
+      } finally {
+        convertBtn.disabled = items.length === 0;
+      }
+    });
+  </script>
+</body>
+
+</html>
