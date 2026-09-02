@@ -66,6 +66,23 @@
       font-size: 0.95rem;
     }
 
+    footer {
+      margin-top: auto;
+      padding-top: 2rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
     /* Drop Zone */
     .dropzone {
       display: block;
@@ -526,10 +543,13 @@
     </div>
   </div>
 
-  <footer style="text-align: center; margin-top: 2rem; color: var(--text-muted); font-size: 0.85rem;">
-    Develop by <a href="https://alkiory.com" target="_blank"
-      style="color: var(--primary); text-decoration: none;">Alkiory</a> with ☕ & 💖. <br>
-    To promote privacy, all processing is done locally in your browser. No images are uploaded to any server.
+  <footer>
+    <p>Develop by <a href="https://alkiory.com" target="_blank">Alkiory</a> with ☕ & 💖.<br>
+      To promote privacy, all processing is done locally in your browser. No images are uploaded to any server.</p>
+    <p style="margin-top: 0.5rem;">
+      Support this project by giving it a ⭐ on <a href="https://github.com/alkiory/imageToPdf"
+        target="_blank">GitHub</a>.
+    </p>
   </footer>
 
   <script>
