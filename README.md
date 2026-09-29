@@ -24,3 +24,15 @@ Open [`index.html`](./index.html) directly in any browser.
 ## Testing
 
 Open [`test.html`](./test.html) in your browser to run the automated in-browser test suite.
+
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for the full release history (also linked from the site footer and the version badge in the header).
+
+## Releases
+
+Latest: [v1.1.0](https://github.com/alkiory/imageToPdf/releases/latest). To publish the tagged releases on GitHub:
+
+```bash
+bash scripts/create-releases.sh   # requires gh CLI authenticated (gh auth login)
+```

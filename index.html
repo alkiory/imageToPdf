@@ -125,6 +125,37 @@
       transition: background-color 0.2s, color 0.2s;
     }
 
+    /* Version badge (top-left, links to changelog) */
+    .version-badge {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 999px;
+      padding: 0.4rem 0.85rem;
+      text-decoration: none;
+      box-shadow: var(--shadow);
+      z-index: 10;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .version-badge:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    @media (max-width: 600px) {
+      .version-badge {
+        top: 0.6rem;
+        left: 0.6rem;
+        padding: 0.3rem 0.7rem;
+      }
+    }
+
     .theme-toggle {
       position: absolute;
       top: 1rem;
@@ -871,6 +902,8 @@
 
 <body>
 
+  <a class="version-badge" id="versionBadge" href="https://github.com/alkiory/imageToPdf/blob/main/CHANGELOG.md" target="_blank" rel="noopener" aria-label="View changelog" data-i18n-title="ttVersion">v1.1.0</a>
+
   <div class="lang-switch" role="group" aria-label="Language / Idioma">
     <button id="langEn" type="button">EN</button>
     <button id="langEs" type="button">ES</button>
@@ -1113,7 +1146,8 @@
     <p><strong>image2pdf</strong> — a free online converter to turn images (JPG, PNG, WEBP and more) into PDF documents, with editing, redaction, watermarks and page options. Built for privacy: everything runs locally in your browser and no image is ever uploaded to a server.<br>
       <span lang="es"><em><strong>image2pdf</strong>: herramienta gratuita para convertir imágenes a PDF, con edición, censura, marcas de agua y opciones de página. Todo el procesamiento ocurre en tu navegador; ninguna imagen se sube a ningún servidor.</em></span></p>
     <p style="margin-top: 0.75rem;">Developed by <a href="https://alkiory.web.app" target="_blank" rel="noopener">Alkiory</a> with ☕ &amp; 💖 ·
-      Give it a ⭐ on <a href="https://github.com/alkiory/imageToPdf" target="_blank" rel="noopener">GitHub</a>.</p>
+      Give it a ⭐ on <a href="https://github.com/alkiory/imageToPdf" target="_blank" rel="noopener">GitHub</a> ·
+      See what's new in the <a href="https://github.com/alkiory/imageToPdf/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Changelog</a>.</p>
   </footer>
 
   <script>
@@ -1188,6 +1222,7 @@
         statusSaving: 'Saving PDF...', statusDone: 'Done!', statusError: 'Error converting images.',
         alertLib: 'PDF library is not loaded.', editedTag: ' (Edited)',
         ttTheme: 'Toggle dark / light mode',
+        ttVersion: 'Version 1.1.0 — view changelog',
         previewTitle: 'Live document preview',
         previewEmpty: 'Add images to see the live preview of your document.',
         previewHint: 'The watermark texture updates instantly — the exported PDF looks just like this.',
@@ -1216,6 +1251,7 @@
         statusSaving: 'Guardando PDF...', statusDone: '¡Listo!', statusError: 'Error al convertir las imágenes.',
         alertLib: 'La biblioteca PDF no se cargó.', editedTag: ' (Editada)',
         ttTheme: 'Cambiar modo oscuro / claro',
+        ttVersion: 'Versión 1.1.0 — ver changelog',
         previewTitle: 'Vista previa en vivo del documento',
         previewEmpty: 'Agrega imágenes para ver la vista previa en vivo de tu documento.',
         previewHint: 'La textura de la marca de agua se actualiza al instante: el PDF exportado se ve igual.',
@@ -1260,6 +1296,10 @@
       if (!lang) lang = (navigator.language || 'en').toLowerCase().startsWith('es') ? 'es' : 'en';
       applyLang(lang);
     })();
+
+    // Single source of truth for the app version (keep in sync with CHANGELOG.md)
+    const APP_VERSION = '1.1.0';
+    document.getElementById('versionBadge').textContent = 'v' + APP_VERSION;
 
     // ---- Theme: dark / light toggle (persisted, defaults to system preference) ----
     const themeToggle = document.getElementById('themeToggle');
