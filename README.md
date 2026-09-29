@@ -2,15 +2,18 @@
 
 A fast, private, 100% client-side tool to convert, edit, redact, and merge images into PDFs directly in your web browser.
 
-Developed by [Alkiory](https://alkiory.com).
+Developed by [Alkiory](https://alkiory.web.app).
 
 ## Features
 
 - **100% Client-Side & Private:** Images never leave your device. Works completely offline.
 - **Drag & Drop:** Upload and reorder thumbnail cards natively.
-- **Image Editor & Redaction:** Draw blackout boxes over sensitive information (IDs, addresses, faces) and adjust filters (brightness, contrast, B&W, sepia).
-- **Tiled Watermarks:** Stamp repeating diagonal watermarks across all pages.
+- **Image Editor & Redaction:** Draw blackout boxes over sensitive information (IDs, addresses, faces), annotate freehand with the **pencil tool** (custom color & thickness), and adjust filters (brightness, contrast, B&W, sepia).
+- **Security-Texture Watermarks:** Continuous watermark lines (`CONFIDENTIAL·CONFIDENTIAL·…`) with no word or line gaps, rotated as a single block (0°, −30°, −45°) — like banknote/official-document security paper.
+- **Single-Page Landing with Live Preview:** Hero section renders the document (image + watermark texture) on canvas in real time as controls change; two-column layout, light minimalist design.
 - **Page Options:** Fit to image, A4, or US Letter in Portrait, Landscape, or Auto orientation with custom margins.
+- **SEO & Discoverability:** Semantic HTML, canonical URL, Open Graph, JSON-LD structured data (WebApplication + FAQ rich results), `robots.txt` and `sitemap.xml`.
+- **Bilingual:** Built-in language switcher (EN/ES) that translates the entire tool UI, plus guide, feature overview and FAQs in both languages. Preference saved in `localStorage`, `?lang=` URL param support and browser-language auto-detection.
 - **Zero Build Step:** Plain HTML5, CSS3, and JavaScript with [`pdf-lib`](https://pdf-lib.js.org/).
 
 ## Quick Start
@@ -21,7 +24,7 @@ Open [`index.html`](./index.html) directly in any browser.
 
 1. Push this repository to GitHub.
 2. In your repo settings, go to **Pages** -> Source: **Deploy from a branch** -> Select `main` / `root`.
-3. Done! The local `./pdf-lib.min.js` and `index.html` work immediately with zero build pipelines.
+3. Done! The local `./pdf-lib.min.js` and `index.html` work immediately with zero build pipelines. The site is served at `https://alkiory.github.io/imageToPdf/`.
 
 ## Testing
 

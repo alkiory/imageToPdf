@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://alkiory.github.io/imageToPdf/sitemap.xml

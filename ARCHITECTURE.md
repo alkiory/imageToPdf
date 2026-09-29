@@ -55,17 +55,21 @@ Before writing code, we audited the initial proposed multi-tier architecture (Fa
 ### Detailed Pipeline
 
 1. **Ingestion:** Native file input and drag-and-drop events read selected `File` objects and assign random IDs and lightweight object URLs.
-2. **Client-Side Redaction & Editing:** When editing, the image is rendered onto an offscreen canvas. Users draw blackout rectangles to mask sensitive text. Redactions and color matrix adjustments are rendered to a JPEG canvas stream.
+2. **Client-Side Redaction & Editing:** When editing, the image is rendered onto an offscreen canvas. Users draw blackout rectangles to mask sensitive text or switch to the freehand **pencil tool** (custom color and thickness) to write, sign or highlight. Redactions, pencil strokes and color matrix adjustments are rendered to a JPEG canvas stream.
 3. **Reordering & State Management:** Cards use native HTML5 drag events (`dragstart`, `dragover`, `drop`) to reorder the item array in memory.
 4. **PDF Generation (`pdf-lib`):**
    - Direct embedding is used for unedited JPEGs and PNGs to preserve original fidelity and bypass re-encoding.
    - Rotated, filtered, or redacted images are processed through the Canvas 2D API.
    - Scaling calculations adjust image aspect ratios according to the chosen page size (Fit to Image, A4, US Letter) and margin settings.
-   - If a watermark is requested, `StandardFonts.HelveticaBold` is stamped in a repeating diagonal grid across the entire page.
+   - If a watermark is requested, a **continuous security texture** is stamped across the entire page: the text is repeated as one unbroken line (`TEXT·TEXT·TEXT·…`, words glued with a `·` separator so there are no horizontal gaps) and rows are packed perpendicular to the text direction at ~0.9× the font size so they visually touch (no line gaps). The whole block is rotated as a single piece (0°, −30° or −45°) around the page center and over-scanned by the page diagonal so corners are always covered.
+   - The same texture algorithm runs in a **live canvas preview** in the hero section (pt→px scaled), so what the user sees is exactly what gets exported.
+6. **Discoverability:** The page ships semantic HTML, a canonical URL, Open Graph/Twitter meta, JSON-LD structured data (`WebApplication` + `FAQPage` for rich results), plus `robots.txt` and `sitemap.xml` at the site root. Below the tool, bilingual (EN/ES) how-to steps, feature cards and FAQs give first-time users clear guidance and search engines indexable content.
+7. **Internationalization:** A lightweight `data-i18n` attribute system translates the entire tool UI between English and Spanish via a single in-page dictionary (`applyLang`). The static bilingual SEO sections stay server-rendered in the HTML (crawlable in both languages) and are toggled with a `body[lang]` CSS rule. Preference persists in `localStorage`, is overridable with `?lang=es|en`, and defaults to the browser language.
+8. **Single-Page Landing (SPA-style):** Everything lives in one `index.html` — no routes, no reloads. A two-column hero stacks the live document preview (canvas, sticky on desktop) next to the controls column (dropzone, options, gallery, actions); changes re-render the preview instantly via input events. Informational SEO sections and the footer follow vertically in the same view.
 5. **Zero-Server Export:** The compiled byte array is wrapped in a `Blob`, attached to an ephemeral anchor tag, triggered for download, and cleaned up from memory via `URL.revokeObjectURL`.
 
 ---
 
 ## 4. Summary
 
-By eliminating unnecessary backend infrastructure and frontend build chains, the entire application consists of **two static files** ([`index.html`](./index.html) and [`pdf-lib.min.js`](./pdf-lib.min.js)), offering infinite scalability, maximum privacy, and zero maintenance.
+By eliminating unnecessary backend infrastructure and frontend build chains, the entire application consists of **two static files** ([`index.html`](./index.html) and [`pdf-lib.min.js`](./pdf-lib.min.js)) plus SEO support files (`robots.txt`, `sitemap.xml`), offering infinite scalability, maximum privacy, and zero maintenance.
