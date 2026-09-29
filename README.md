@@ -4,8 +4,6 @@
 
 **image2pdf** is a fast, private, 100% client-side tool to convert, edit, redact, and merge images into PDFs directly in your web browser.
 
-Developed by [Alkiory](https://alkiory.web.app).
-
 ## Features
 
 - **100% Client-Side & Private:** Images never leave your device. Works completely offline.
@@ -23,16 +21,6 @@ Developed by [Alkiory](https://alkiory.web.app).
 
 Open [`index.html`](./index.html) directly in any browser.
 
-## Deployment (GitHub Pages)
-
-1. Push this repository to GitHub.
-2. In your repo settings, go to **Pages** -> Source: **Deploy from a branch** -> Select `main` / `root`.
-3. Done! The local `./pdf-lib.min.js` and `index.html` work immediately with zero build pipelines. The site is served at `https://alkiory.github.io/imageToPdf/`.
-
 ## Testing
 
 Open [`test.html`](./test.html) in your browser to run the automated in-browser test suite.
-
-## License
-
-MIT
