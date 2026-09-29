@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Image to PDF Converter — Free, Private & Online | Alkiory</title>
-  <meta name="description" content="Convert JPG, PNG, WEBP, GIF, BMP or SVG images to PDF online for free. Edit, redact sensitive info, draw with a pencil, add watermarks and merge pages — 100% private: images never leave your browser. Convierte imágenes a PDF gratis, sin subir tus archivos.">
+  <title>image2pdf — Convert Image to PDF Online Free & Private | Alkiory</title>
+  <meta name="description" content="image2pdf converts JPG, PNG, WEBP, GIF, BMP or SVG images to PDF online for free. Edit, redact sensitive info, draw with a pencil, add watermarks and merge pages — 100% private: images never leave your browser. Convierte imágenes a PDF gratis con image2pdf, sin subir tus archivos.">
   <meta name="keywords" content="convert image to pdf, convertir imagen a pdf, image to pdf converter, jpg to pdf, png to pdf, imagen a pdf, pasar imagen a pdf, foto a pdf, jpg a pdf, imagen a pdf gratis, convertidor imagen a pdf, free image to pdf, private pdf converter, redact pdf, watermark pdf, marca de agua pdf">
   <meta name="robots" content="index, follow, max-image-preview:large">
   <meta name="author" content="Alkiory">
@@ -13,18 +13,23 @@
   <link rel="alternate" hreflang="en" href="https://alkiory.github.io/imageToPdf/?lang=en">
   <link rel="alternate" hreflang="es" href="https://alkiory.github.io/imageToPdf/?lang=es">
   <link rel="canonical" href="https://alkiory.github.io/imageToPdf/">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%2338bdf8'/%3E%3Cpath d='M7 8h10M7 12h10M7 16h6' stroke='%230f172a' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/png" sizes="64x64" href="./image2pdf-favicon-64.png">
+  <link rel="icon" type="image/webp" sizes="512x512" href="./image2pdfLogo-512.webp">
+  <link rel="apple-touch-icon" href="./image2pdfLogo-512.png">
+  <link rel="preload" as="image" href="./image2pdfLogo-512.webp" fetchpriority="high">
   <!-- Open Graph / social sharing -->
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Image to PDF Converter">
-  <meta property="og:title" content="Image to PDF Converter — Free, Private & Online">
-  <meta property="og:description" content="Convert and merge images into a PDF right in your browser. Redact, draw with a pencil, add watermarks. Free and 100% private — no uploads. / Convierte imágenes a PDF gratis.">
+  <meta property="og:site_name" content="image2pdf">
+  <meta property="og:title" content="image2pdf — Convert Image to PDF Online, Free & Private">
+  <meta property="og:description" content="image2pdf: convert and merge images into a PDF right in your browser. Redact, draw with a pencil, add watermarks. Free and 100% private — no uploads. / Convierte imágenes a PDF gratis.">
   <meta property="og:url" content="https://alkiory.github.io/imageToPdf/">
+  <meta property="og:image" content="https://alkiory.github.io/imageToPdf/image2pdfLogo-512.png">
+  <meta name="twitter:image" content="https://alkiory.github.io/imageToPdf/image2pdfLogo-512.png">
   <meta property="og:locale" content="en_US">
   <meta property="og:locale:alternate" content="es_ES">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Image to PDF Converter — Free, Private & Online">
-  <meta name="twitter:description" content="Convert, edit, redact and merge images into a PDF without uploading anything. Free forever.">
+  <meta name="twitter:title" content="image2pdf — Convert Image to PDF Online, Free & Private">
+  <meta name="twitter:description" content="image2pdf: convert, edit, redact and merge images into a PDF without uploading anything. Free forever.">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -33,11 +38,13 @@
         "@type": "WebApplication",
         "@id": "https://alkiory.github.io/imageToPdf/#app",
         "name": "Image to PDF Converter",
-        "alternateName": "Convertidor de Imagen a PDF",
+        "alternateName": "image2pdf — Convertidor de Imagen a PDF",
+        "image": "https://alkiory.github.io/imageToPdf/image2pdfLogo-512.png",
+        "logo": "https://alkiory.github.io/imageToPdf/image2pdfLogo-512.png",
         "url": "https://alkiory.github.io/imageToPdf/",
         "applicationCategory": "UtilitiesApplication",
         "operatingSystem": "Any (works in modern web browsers)",
-        "description": "Free online tool to convert JPG, PNG, WEBP, GIF, BMP and SVG images into PDF documents. Edit, redact sensitive information, draw freehand annotations, add watermarks and merge multiple images — 100% private, everything runs in your browser.",
+        "description": "image2pdf is a free online tool to convert JPG, PNG, WEBP, GIF, BMP and SVG images into PDF documents. Edit, redact sensitive information, draw freehand annotations, add watermarks and merge multiple images — 100% private, everything runs in your browser.",
         "inLanguage": ["en", "es"],
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
         "author": { "@type": "Organization", "name": "Alkiory", "url": "https://alkiory.web.app" },
@@ -163,6 +170,15 @@
 
     header {
       text-align: center;
+    }
+
+    .brand-logo {
+      display: block;
+      width: 72px;
+      height: auto;
+      margin: 0 auto 0.6rem;
+      border-radius: 16px;
+      filter: drop-shadow(0 2px 6px rgba(15, 23, 42, 0.14));
     }
 
     header h1 {
@@ -863,7 +879,8 @@
 
   <div class="container">
     <header>
-      <h1>Image to <span>PDF</span> Converter</h1>
+      <img class="brand-logo" src="./image2pdfLogo-512.webp" alt="image2pdf" width="72" height="77" decoding="async" fetchpriority="high">
+      <h1>image2pdf — Image to <span>PDF</span> Converter</h1>
       <p data-i18n="subtitle">Convert JPG, PNG, WEBP, GIF, BMP or SVG images into a PDF right in your browser — free, private, with redaction, pencil markup, watermarks and page options.</p>
       <p class="lang-es" style="margin-top: 0.35rem;"><a href="#como-funciona-es" style="color: var(--primary);">Guía en español: cómo convertir imagen a PDF ↓</a></p>
       <p class="lang-en" style="margin-top: 0.35rem;"><a href="#how-it-works" style="color: var(--primary);">New here? Follow the 3-step guide below ↓</a></p>
@@ -1093,8 +1110,8 @@
   </main>
 
   <footer>
-    <p><strong>About this tool:</strong> a free online converter to turn images (JPG, PNG, WEBP and more) into PDF documents — with editing, redaction, watermarks and page options. Built for privacy: everything runs locally in your browser and no image is ever uploaded to a server.<br>
-      <span lang="es"><em>Herramienta gratuita para convertir imágenes a PDF. Todo el procesamiento ocurre en tu navegador; ninguna imagen se sube a ningún servidor.</em></span></p>
+    <p><strong>image2pdf</strong> — a free online converter to turn images (JPG, PNG, WEBP and more) into PDF documents, with editing, redaction, watermarks and page options. Built for privacy: everything runs locally in your browser and no image is ever uploaded to a server.<br>
+      <span lang="es"><em><strong>image2pdf</strong>: herramienta gratuita para convertir imágenes a PDF, con edición, censura, marcas de agua y opciones de página. Todo el procesamiento ocurre en tu navegador; ninguna imagen se sube a ningún servidor.</em></span></p>
     <p style="margin-top: 0.75rem;">Developed by <a href="https://alkiory.web.app" target="_blank" rel="noopener">Alkiory</a> with ☕ &amp; 💖 ·
       Give it a ⭐ on <a href="https://github.com/alkiory/imageToPdf" target="_blank" rel="noopener">GitHub</a>.</p>
   </footer>

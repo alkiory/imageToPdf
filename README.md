@@ -1,6 +1,8 @@
-# Image to PDF Converter
+# image2pdf — Image to PDF Converter
 
-A fast, private, 100% client-side tool to convert, edit, redact, and merge images into PDFs directly in your web browser.
+![image2pdf logo](./image2pdfLogo.png)
+
+**image2pdf** is a fast, private, 100% client-side tool to convert, edit, redact, and merge images into PDFs directly in your web browser.
 
 Developed by [Alkiory](https://alkiory.web.app).
 
@@ -9,6 +11,7 @@ Developed by [Alkiory](https://alkiory.web.app).
 - **100% Client-Side & Private:** Images never leave your device. Works completely offline.
 - **Drag & Drop:** Upload and reorder thumbnail cards natively.
 - **Image Editor & Redaction:** Draw blackout boxes over sensitive information (IDs, addresses, faces), annotate freehand with the **pencil tool** (custom color & thickness), and adjust filters (brightness, contrast, B&W, sepia).
+- **Branding:** `image2pdf` logo used as favicon, header logo and social-sharing image (Open Graph / Twitter). Optimized variants ship alongside the original: `image2pdfLogo-512.webp` (18 KB, header/favicon), `image2pdfLogo-512.png` (177 KB, OG/apple-touch) and `image2pdf-favicon-64.png` (5 KB).
 - **Security-Texture Watermarks:** Continuous watermark lines (`CONFIDENTIAL·CONFIDENTIAL·…`) with no word or line gaps, rotated as a single block (0°, −30°, −45°) — like banknote/official-document security paper.
 - **Single-Page Landing with Live Preview:** Hero section renders the document (image + watermark texture) on canvas in real time as controls change; two-column layout, light minimalist design.
 - **Page Options:** Fit to image, A4, or US Letter in Portrait, Landscape, or Auto orientation with custom margins.
