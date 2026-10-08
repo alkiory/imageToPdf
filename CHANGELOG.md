@@ -5,6 +5,20 @@ All notable changes to **image2pdf** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Readable footer watermark line**: when a watermark is set, the same text is drawn as a single centred line at the bottom of every page — larger (up to 5% of the shorter page edge, auto-shrunk to fit), dark gray at 60% opacity, and independent from the background pattern. Rendered identically in the live preview and in the exported PDF.
+
+### Changed
+- **Watermark pattern flows as a wave**: the background texture no longer reads as a rigid diagonal grid — every row now follows a sinusoidal baseline (amplitude ≈1.4× the font size, wavelength 0.6× the shorter page edge) drawn as short chords tilted to the curve's tangent, for an organic banknote-style flow. Measured on the exported PDF: perfect sine (correlation 1.0000), amplitude 20.7 pt, tangent rotation ±20°.
+- **Smaller pattern text**: 4% → 2.5% of the shorter page edge (≈15 pt on A4), so the texture reads as small legible security text with the footer standing out above it.
+
+### Fixed
+- **Watermark texture is now truly continuous in the exported PDF**: the stamp grid was anchored to the page's bottom-left corner and laid out in unrotated page coordinates while each stamp was rotated on its own, which left the top third of every page (≈33% of the height) and diagonal bands completely free of watermark. The grid now lives in the rotated frame and is mapped around the page centre, so the texture is uniform corner to corner — measured ink coverage ≈39% with zero empty rows or columns at 0°, −30° and −45° (was 17–26% with a 273–279 px empty band).
+- **No lanes between lines**: the row pitch went from 0.9× to 0.7× the font size (rows overlap slightly) and every row gets a golden-ratio horizontal phase, so neither line gaps nor word-space channels can line up vertically — previously 2–3 px white lanes appeared at 0°.
+- **Live preview now matches the export**: the preview rendered the watermark text 33% larger than the PDF (a stray `×1.33` px conversion); it now uses the same pt→px scale, so what you see is what downloads.
+
 ## [1.1.0] — 2026-09-29
 
 Big release: security-texture watermarks, a live-preview single-page landing, freehand pencil editing, bilingual UI with dark mode, and full SEO/branding work.

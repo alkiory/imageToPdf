@@ -10,7 +10,7 @@
 - **Drag & Drop:** Upload and reorder thumbnail cards natively.
 - **Image Editor & Redaction:** Draw blackout boxes over sensitive information (IDs, addresses, faces), annotate freehand with the **pencil tool** (custom color & thickness), and adjust filters (brightness, contrast, B&W, sepia).
 - **Branding:** `image2pdf` logo used as favicon, header logo and social-sharing image (Open Graph / Twitter). Optimized variants ship alongside the original: `image2pdfLogo-512.webp` (18 KB, header/favicon), `image2pdfLogo-512.png` (177 KB, OG/apple-touch) and `image2pdf-favicon-64.png` (5 KB).
-- **Security-Texture Watermarks:** Continuous watermark lines (`CONFIDENTIAL·CONFIDENTIAL·…`) with no word or line gaps, rotated as a single block (0°, −30°, −45°) — like banknote/official-document security paper.
+- **Wavy Security-Texture Watermarks:** The watermark text (`CONFIDENTIAL·CONFIDENTIAL·…`) flows as a continuous sinusoidal wave (organic, banknote-style), with no word or line gaps, rotated as a single block (0°, −30°, −45°). A readable footer line repeats the same text larger and darker at the bottom of every page.
 - **Single-Page Landing with Live Preview:** Hero section renders the document (image + watermark texture) on canvas in real time as controls change; two-column layout, light minimalist design.
 - **Page Options:** Fit to image, A4, or US Letter in Portrait, Landscape, or Auto orientation with custom margins.
 - **SEO & Discoverability:** Semantic HTML, canonical URL, Open Graph, JSON-LD structured data (WebApplication + FAQ rich results), `robots.txt` and `sitemap.xml`.

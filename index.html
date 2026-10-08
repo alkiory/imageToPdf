@@ -1335,35 +1335,84 @@
       return { text, angle, color };
     }
 
-    // Continuous security texture (shared by PDF export and live preview):
-    // one UNBROKEN line of repeated text ("WORD·WORD·WORD..."), words glued
-    // with a · separator so there are no horizontal gaps, and rows packed
-    // perpendicular to the text direction so there is no vertical gap.
-    // The whole block is rotated as a single piece around the page center.
+    // Continuous WAVY security texture (shared by PDF export and live preview):
+    // the repeated text ("WORD·WORD·…", glued with ·) follows a sinusoidal
+    // baseline drawn as short rotated chords, so the pattern reads as an
+    // organic wave instead of a rigid diagonal grid. Rows are packed tighter
+    // than the cap height (no line lanes) and every row gets a golden-ratio
+    // phase so the word spaces never align into vertical channels.
     function drawWatermarkTexture(ctx, width, height, text, angleDeg, color, textSizePx, opacity) {
       const unit = text + '·';
       ctx.save();
-      const rad = (angleDeg * Math.PI) / 180;
-      ctx.translate(width / 2, height / 2);
-      ctx.rotate(-rad); // rotate the whole block as one piece
       ctx.fillStyle = color;
       ctx.globalAlpha = opacity;
       ctx.font = 'bold ' + textSizePx + 'px Helvetica, Arial, sans-serif';
       ctx.textBaseline = 'alphabetic';
-      const unitWidth = Math.max(ctx.measureText(unit).width, 8);
-      const cellW = unitWidth; // units touch: no space between repetitions
-      const rowH = Math.max(textSizePx * 0.9, 6); // rows visually touch
+
+      // Prefix widths of the unit, used to cut the text into wave segments
+      const n = unit.length;
+      const prefix = [0];
+      for (let i = 1; i <= n; i++) prefix.push(ctx.measureText(unit.slice(0, i)).width);
+      const unitWidth = Math.max(prefix[n], 8);
+
+      const rowH = Math.max(textSizePx * 0.7, 1.5); // rows overlap: no line lanes
       const halfDiag = Math.ceil(Math.sqrt(width * width + height * height) / 2);
-      const cols = Math.ceil((halfDiag * 2) / cellW) + 2;
+      const waveLen = Math.max(textSizePx * 6, Math.min(width, height) * 0.6);
+      const amp = textSizePx * 1.4; // wave height
+      const segLen = waveLen / 6;   // 6 straight chords per wavelength
+      const kW = (2 * Math.PI) / waveLen;
+
       const rows = Math.ceil((halfDiag * 2) / rowH) + 2;
-      const startX = -((cols >> 1)) * cellW;
       const startY = -((rows >> 1)) * rowH + rowH * 0.72;
+      const xMin = -(halfDiag + unitWidth);
+      const xMax = halfDiag + unitWidth;
+
+      const rad = (angleDeg * Math.PI) / 180;
+      ctx.translate(width / 2, height / 2);
+      ctx.rotate(-rad); // rotate the whole block as one piece
+
       for (let r = 0; r < rows; r++) {
-        const y = startY + r * rowH;
-        for (let c = 0; c < cols; c++) {
-          ctx.fillText(unit, startX + c * cellW, y);
+        const y0 = startY + r * rowH;
+        const xShift = ((r * 0.6180339887498949) % 1) * unitWidth;
+        let px = xMin + xShift;
+        let idx = 0;
+        while (px < xMax) {
+          let j = idx + 1;
+          while (j < n && prefix[j] - prefix[idx] < segLen) j++;
+          const w = prefix[j] - prefix[idx];
+          // baseline of the wave at this x (canvas y grows downward)
+          const py = y0 - amp * Math.sin(kW * px);
+          const ang = Math.atan(-amp * kW * Math.cos(kW * px));
+          ctx.save();
+          ctx.translate(px, py);
+          ctx.rotate(ang);
+          ctx.fillText(unit.slice(idx, j), 0, 0);
+          ctx.restore();
+          px += w * Math.cos(ang);
+          idx = j >= n ? j - n : j;
         }
       }
+      ctx.restore();
+    }
+
+    // Readable footer line — NOT part of the wave pattern: the same watermark
+    // text, larger and dark, centred at the bottom of the page. Only drawn
+    // when a watermark is set.
+    function drawWatermarkFooter(ctx, width, height, text, pageWpt, pageHpt, k) {
+      let size = Math.min(pageWpt, pageHpt) * 0.05 * k;
+      ctx.save();
+      ctx.font = 'bold ' + size + 'px Helvetica, Arial, sans-serif';
+      const tw = ctx.measureText(text).width;
+      if (tw > width * 0.92) {
+        size *= (width * 0.92) / tw; // shrink to fit the page width
+        ctx.font = 'bold ' + size + 'px Helvetica, Arial, sans-serif';
+      }
+      ctx.globalAlpha = 0.6;
+      ctx.fillStyle = '#333333';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+      const fromBottom = Math.max(pageHpt * 0.03, size * 0.6 / k) * k;
+      ctx.fillText(text, width / 2, height - fromBottom);
       ctx.restore();
     }
 
@@ -1457,11 +1506,13 @@
             }
             ctx.restore();
 
-            // Watermark security texture (same algorithm as the PDF)
+            // Watermark security texture drawn ON TOP of the content at a low
+            // opacity (same algorithm and scale as the exported PDF)
             if (cfg.text) {
-              const textSizePt = Math.min(pW, pH) * 0.04;
-              const textSizePx = Math.max(6, textSizePt * k * 1.33); // pt→px
+              const textSizePt = Math.min(pW, pH) * 0.025;
+              const textSizePx = Math.max(4, textSizePt * k); // pt → preview px
               drawWatermarkTexture(ctx, viewW, viewH, cfg.text, cfg.angle, cfg.color, textSizePx, 0.13);
+              drawWatermarkFooter(ctx, viewW, viewH, cfg.text, pW, pH, k);
             }
 
             const wrap = document.createElement('div');
@@ -1481,10 +1532,17 @@
       }
     }
 
-    // Instant preview updates on any control change (no save button, no reload)
+    // Instant preview updates on any control change (no save button, no reload).
+    // Debounced: the wavy texture draws thousands of segments per page, so we
+    // wait for a short typing pause instead of redrawing on every keystroke.
+    let previewTimer = null;
+    const schedulePreview = () => {
+      clearTimeout(previewTimer);
+      previewTimer = setTimeout(renderPreview, 80);
+    };
     [watermarkInput, watermarkAngleInput, watermarkColorInput, marginInput, pageSizeInput, orientationInput].forEach(el => {
-      el.addEventListener('input', renderPreview);
-      el.addEventListener('change', renderPreview);
+      el.addEventListener('input', schedulePreview);
+      el.addEventListener('change', schedulePreview);
     });
     renderPreview();
 
@@ -2029,42 +2087,86 @@
             height: drawHeight
           });
 
-          // Continuous security-texture watermark (like banknote / official
-          // document paper): one unbroken repeated line of text ("WORD·WORD·...")
-          // with rows packed perpendicular to the text direction, the whole
-          // block rotated as a single piece. No word gaps, no line gaps.
+          // Continuous WAVY security texture (like banknote / official
+          // document paper): the text is repeated as ONE unbroken line
+          // ("WORD·WORD·…", glued with ·) and every row follows a sinusoidal
+          // baseline drawn as short rotated chords, so the pattern reads as an
+          // organic wave instead of a rigid grid. The layout lives in the
+          // ROTATED frame and is mapped around the PAGE CENTER, rows are packed
+          // tighter than the cap height (no line lanes) and every row gets a
+          // golden-ratio phase so the word spaces never align vertically.
+          // Drawn ON TOP of the content at a low opacity, so the texture reads
+          // across the whole page without hiding the data underneath.
           if (watermarkText && font) {
-            const textSize = Math.min(pWidth, pHeight) * 0.04;
+            const textSize = Math.min(pWidth, pHeight) * 0.025;
             const unit = watermarkText + '·';
-            const unitWidth = font.widthOfTextAtSize(unit, textSize);
-            const cellW = Math.max(unitWidth, 8); // units touch: no word gaps
-            const rowH = Math.max(textSize * 0.9, 6); // rows touch: no line gaps
+            const n = unit.length;
+            // Prefix widths of the unit, used to cut the text into wave segments
+            const prefix = [0];
+            for (let i = 1; i <= n; i++) prefix.push(font.widthOfTextAtSize(unit.slice(0, i), textSize));
+            const unitWidth = Math.max(prefix[n], 8);
+            const rowH = Math.max(textSize * 0.7, 1); // rows overlap: no line lanes
             const angle = watermarkAngle;
             const rad = (angle * Math.PI) / 180;
+            const cosA = Math.cos(rad);
+            const sinA = Math.sin(rad);
+            const cx = pWidth / 2;
+            const cy = pHeight / 2;
             // Hex color → pdf-lib rgb() components (0–1 range)
             const wr = parseInt(watermarkColor.slice(1, 3), 16) / 255;
             const wg = parseInt(watermarkColor.slice(3, 5), 16) / 255;
             const wb = parseInt(watermarkColor.slice(5, 7), 16) / 255;
-            const halfDiag = Math.ceil(Math.sqrt(pWidth * pWidth + pHeight * pHeight) / 2);
-            const cols = Math.ceil((halfDiag * 2) / cellW) + 2;
-            const rows = Math.ceil((halfDiag * 2) / rowH) + 2;
-            const startX = -((cols >> 1)) * cellW;
+            // Half-diagonal of the page = radius of the smallest circle that
+            // covers the whole page, whatever the rotation angle.
+            const halfSpan = Math.ceil(Math.sqrt(pWidth * pWidth + pHeight * pHeight) / 2);
+            const waveLen = Math.max(textSize * 6, Math.min(pWidth, pHeight) * 0.6);
+            const amp = textSize * 1.4; // wave height
+            const segLen = waveLen / 6; // 6 straight chords per wavelength
+            const kW = (2 * Math.PI) / waveLen;
+            const rows = Math.ceil((halfSpan * 2) / rowH) + 2;
             const startY = -((rows >> 1)) * rowH + rowH * 0.72;
+            const xMin = -(halfSpan + unitWidth);
+            const xMax = halfSpan + unitWidth;
 
             for (let r = 0; r < rows; r++) {
-              const y = startY + r * rowH;
-              for (let c = 0; c < cols; c++) {
-                page.drawText(unit, {
-                  x: startX + c * cellW,
-                  y,
+              const y0 = startY + r * rowH;
+              // Stagger every row with a different phase (golden-ratio step)
+              // so the word spaces never line up into a vertical empty lane.
+              const xShift = ((r * 0.6180339887498949) % 1) * unitWidth;
+              let lx = xMin + xShift;
+              let idx = 0;
+              while (lx < xMax) {
+                let j = idx + 1;
+                while (j < n && prefix[j] - prefix[idx] < segLen) j++;
+                const w = prefix[j] - prefix[idx];
+                const ly = y0 + amp * Math.sin(kW * lx); // baseline of the wave
+                const ang = Math.atan(amp * kW * Math.cos(kW * lx));
+                page.drawText(unit.slice(idx, j), {
+                  x: cx + lx * cosA - ly * sinA,
+                  y: cy + lx * sinA + ly * cosA,
                   size: textSize,
                   font: font,
                   color: rgb(wr, wg, wb),
                   opacity: 0.13,
-                  rotate: degrees(angle)
+                  rotate: degrees(angle + (ang * 180) / Math.PI)
                 });
+                lx += w * Math.cos(ang);
+                idx = j >= n ? j - n : j;
               }
             }
+
+            // Readable footer line — NOT part of the wave pattern: the same
+            // watermark text, larger and dark, centred at the bottom of the page.
+            const footUnitW = font.widthOfTextAtSize(watermarkText, 1);
+            const footSize = Math.min(Math.min(pWidth, pHeight) * 0.05, (pWidth * 0.92) / Math.max(footUnitW, 0.01));
+            page.drawText(watermarkText, {
+              x: (pWidth - footUnitW * footSize) / 2,
+              y: Math.max(pHeight * 0.03, footSize * 0.6),
+              size: footSize,
+              font: font,
+              color: rgb(0.2, 0.2, 0.2),
+              opacity: 0.6
+            });
           }
         }
 
