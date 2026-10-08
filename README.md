@@ -31,8 +31,10 @@ See [CHANGELOG.md](./CHANGELOG.md) for the full release history (also linked fro
 
 ## Releases
 
-Latest: [v1.1.0](https://github.com/alkiory/imageToPdf/releases/latest). To publish the tagged releases on GitHub:
+Latest: [v1.2.0](https://github.com/alkiory/imageToPdf/releases/latest). To publish a release on GitHub:
 
 ```bash
-bash scripts/create-releases.sh   # requires gh CLI authenticated (gh auth login)
+bash scripts/create-releases.sh           # releases the APP_VERSION of index.html
+bash scripts/create-releases.sh v1.2.0     # or pass an explicit vX.Y.Z
+# requires gh CLI authenticated (gh auth login)
 ```

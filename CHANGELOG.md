@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] — 2026-10-08
+
+Wavy security watermark, readable footer line and EN/ES layout parity.
+
 ### Added
 - **Readable footer watermark line**: when a watermark is set, the same text is drawn as a single centred line at the bottom of every page — larger (up to 5% of the shorter page edge, auto-shrunk to fit), dark gray at 60% opacity, and independent from the background pattern. Rendered identically in the live preview and in the exported PDF.
 
@@ -55,5 +59,6 @@ Big release: security-texture watermarks, a live-preview single-page landing, fr
 - Drag & drop ingestion with native HTML5 reordering; 90° rotation.
 - Project documentation (#8941644).
 
-[1.1.0]: https://github.com/alkiory/imageToPdf/compare/c549104...HEAD
+[1.2.0]: https://github.com/alkiory/imageToPdf/compare/c5f9573...v1.2.0
+[1.1.0]: https://github.com/alkiory/imageToPdf/compare/c549104...c5f9573
 [1.0.0]: https://github.com/alkiory/imageToPdf/releases/tag/v1.0.0
