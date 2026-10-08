@@ -40,6 +40,7 @@ Big release: security-texture watermarks, a live-preview single-page landing, fr
 - Header H1 and metadata now lead with the `image2pdf` brand for branded search queries.
 
 ### Fixed
+- **English and Spanish now render the exact same page skeleton**: the Spanish SEO content shipped as only two blocks — the FAQ was nested inside the steps card (under an `<h3>`, so a gray card containing bordered boxes) and the features card came first, while English had three independent cards in the order steps → features → FAQ with `<h2>` headings. Both languages now use the same three-section structure, same order, same heading levels and the same 6 FAQ items (the “works on mobile/offline?” entry was missing in Spanish). Switching the language only swaps text — a DOM parity check over the visible element tree reports `STRUCTURE IDENTICAL` (221 nodes in both).
 - Pencil strokes previously collapsed to single dots; they now accumulate intermediate points while drawing.
 - Watermark vertical gaps eliminated (row pitch compensates for the rotation angle).
 
